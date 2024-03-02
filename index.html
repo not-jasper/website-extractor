@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasper's Website Source Code Extractor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kode+Mono&display=swap">
+</head>
+<body>
+    <a href="https://github.com/not-jasper" class="github-btn">My Github</a>
+
+    <div class="container">
+        <h1>Website Source Code Extractor</h1>
+        <label for="websiteUrl">Enter Website URL:</label>
+        <input type="text" id="websiteUrl" placeholder="https://example.com">
+        <button onclick="getSourceCode()">Get Source Code</button>
+        <hr>
+        <div class="box">
+            <label for="htmlCode">HTML:</label>
+            <textarea id="htmlCode" readonly></textarea>
+        </div>
+        <div class="box">
+            <label for="cssCode">CSS:</label>
+            <textarea id="cssCode" readonly></textarea>
+        </div>
+        <div class="box">
+            <label for="jsCode">JavaScript:</label>
+            <textarea id="jsCode" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        function getSourceCode() {
+            var url = document.getElementById('websiteUrl').value.trim();
+            if (!url) {
+                return;
+            }
+            
+            var proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+
+            fetch(proxyUrl)
+            .then(response => response.text())
+            .then(data => {
+                var parser = new DOMParser();
+                var htmlDoc = parser.parseFromString(data, 'text/html');
+                var html = htmlDoc.documentElement.outerHTML;
+                var styleTags = htmlDoc.querySelectorAll('style');
+                var css = Array.from(styleTags).map(tag => tag.innerHTML).join('\n');
+                var scriptTags = htmlDoc.querySelectorAll('script');
+                var js = Array.from(scriptTags).map(tag => tag.innerHTML).join('\n');
+                
+                document.getElementById('htmlCode').value = html;
+                document.getElementById('cssCode').value = css;
+                document.getElementById('jsCode').value = js;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('htmlCode').value = 'Error fetching source code. Please check the URL or try again later.';
+                document.getElementById('cssCode').value = '';
+                document.getElementById('jsCode').value = '';
+            });
+        }
+
+        document.getElementById('websiteUrl').addEventListener('keydown', function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                getSourceCode();
+            }
+        });
+    </script>
+</body>
+</html>
